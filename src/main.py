@@ -16,7 +16,7 @@ def find_config(path):
     if config_path.is_file():
         return config_path
     if config_path.name == str(config_path):
-        test_path = Path(__file__).resolve().parent.parent / "tests" / config_path
+        test_path = Path(__file__).resolve().parent.parent/"tests"/config_path
         if test_path.is_file():
             return test_path
     raise ValueError("Конфигурационный файл не найден")
