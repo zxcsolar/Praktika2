@@ -3,6 +3,8 @@ import sys
 from pathlib import Path
 from urllib.parse import urlparse
 
+from pypi_repository import fetch_dependencies
+
 REQUIRED_OPTIONS = (
     "package",
     "repository",
@@ -85,15 +87,26 @@ def load_config(path):
         "ascii_tree": ascii_tree,
     }
 
+def show_dependencies(settings):
+    if settings["test_mode"]:
+        raise ValueError("Тестовый репозиторий поддерживается с этапа 3")
+    package = settings["package"]
+    dependencies = fetch_dependencies(settings["repository"], package)
+    print(f"Прямые зависимости {package}:")
+    if not dependencies:
+        print("Нет зависимостей")
+    for requirement in dependencies:
+        print(requirement)
+
+
 def main():
     config_path = sys.argv[1] if len(sys.argv) > 1 else "config.ini"
     try:
         settings = load_config(config_path)
+        show_dependencies(settings)
     except (ValueError, configparser.Error, OSError) as error:
         print(f"Ошибка: {error}", file=sys.stderr)
         return 1
-    for key, value in settings.items():
-        print(f"{key}: {value}")
     return 0
 
 if __name__ == "__main__":
