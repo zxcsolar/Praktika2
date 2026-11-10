@@ -1,0 +1,11 @@
+[
+  {"info": {"name": "A", "version": "1.0", "requires_dist": [
+    "B>=2,<3", "C==3.0"
+  ]}},
+  {"info": {"name": "B", "version": "2.1", "requires_dist": ["D>=4"]}},
+  {"info": {"name": "C", "version": "3.0", "requires_dist": ["D==4.0"]}},
+  {"info": {"name": "D", "version": "4.0", "requires_dist": null}},
+  {"info": {"name": "X", "version": "1.0", "requires_dist": ["Y==2"]}},
+  {"info": {"name": "Y", "version": "2.0", "requires_dist": ["X>=1"]}},
+  {"info": {"name": "Z", "version": "3.0", "requires_dist": ["Z==3.0"]}}
+]

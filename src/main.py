@@ -1,9 +1,12 @@
 import configparser
 import sys
+from functools import partial
 from pathlib import Path
 from urllib.parse import urlparse
 
-from pypi_repository import fetch_dependencies
+from dependency_graph import build_graph
+from pypi_repository import fetch_metadata
+from test_repository import open_test_repository
 
 REQUIRED_OPTIONS = (
     "package",
@@ -87,23 +90,30 @@ def load_config(path):
         "ascii_tree": ascii_tree,
     }
 
-def show_dependencies(settings):
+def show_graph(settings):
+    repository = settings["repository"]
     if settings["test_mode"]:
-        raise ValueError("Тестовый репозиторий поддерживается с этапа 3")
-    package = settings["package"]
-    dependencies = fetch_dependencies(settings["repository"], package)
-    print(f"Прямые зависимости {package}:")
-    if not dependencies:
-        print("Нет зависимостей")
-    for requirement in dependencies:
-        print(requirement)
+        fetch = open_test_repository(repository)
+    else:
+        fetch = partial(fetch_metadata, repository)
+    graph, cycles = build_graph(settings["package"], fetch)
+    print_graph(graph, cycles)
+
+
+def print_graph(graph, cycles):
+    for name, package in graph.items():
+        requirements = [edge.requirement for edge in package.dependencies]
+        neighbors = ", ".join(requirements) or "нет зависимостей"
+        print(f"{name} ({package.version}) -> {neighbors}")
+    for source, target in cycles:
+        print(f"Циклическая зависимость: {source} -> {target}")
 
 
 def main():
     config_path = sys.argv[1] if len(sys.argv) > 1 else "config.ini"
     try:
         settings = load_config(config_path)
-        show_dependencies(settings)
+        show_graph(settings)
     except (ValueError, configparser.Error, OSError) as error:
         print(f"Ошибка: {error}", file=sys.stderr)
         return 1

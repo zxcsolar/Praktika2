@@ -20,13 +20,16 @@ def fetch_metadata(repository, package):
         raise ValueError("Репозиторий вернул некорректный JSON") from error
 
 
-def fetch_dependencies(repository, package):
-    metadata = fetch_metadata(repository, package)
+def package_info(metadata):
     if not isinstance(metadata, dict):
         raise ValueError("В ответе отсутствуют метаданные пакета")
     info = metadata.get("info")
     if not isinstance(info, dict):
         raise ValueError("В ответе отсутствуют метаданные пакета")
+    return info
+
+
+def read_requirements(info):
     requirements = info.get("requires_dist")
     if requirements is None:
         return []
