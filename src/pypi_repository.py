@@ -3,15 +3,17 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote
 from urllib.request import urlopen
 
+http_not_found = 404
+request_timeout = 10
 
 def fetch_metadata(repository, package):
     name = quote(package, safe="")
     url = f"{repository.rstrip('/')}/{name}/json"
     try:
-        with urlopen(url, timeout=10) as response:
+        with urlopen(url, timeout=request_timeout) as response:
             return json.load(response)
     except HTTPError as error:
-        if error.code == 404:
+        if error.code == http_not_found:
             raise ValueError(f"Пакет {package} не найден") from error
         raise ValueError(f"Ошибка репозитория: HTTP {error.code}") from error
     except URLError as error:
