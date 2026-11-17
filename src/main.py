@@ -5,9 +5,10 @@ from graphlib import TopologicalSorter
 from pathlib import Path
 from urllib.parse import urlparse
 
-from dependency_graph import build_graph
+from dependency_graph import build_graph, normalize_name
 from pypi_repository import fetch_metadata
 from test_repository import open_test_repository
+from visualization import print_tree, save_svg
 
 REQUIRED_OPTIONS = (
     "package",
@@ -100,6 +101,11 @@ def show_graph(settings):
     graph, cycles = build_graph(settings["package"], fetch)
     print_graph(graph, cycles)
     print_load_order(graph, cycles, settings["test_mode"])
+    root = normalize_name(settings["package"])
+    if settings["ascii_tree"]:
+        print_tree(graph, root, settings["test_mode"])
+    path = save_svg(graph, settings["output_file"], settings["test_mode"])
+    print(f"SVG сохранён: {path}")
 
 
 def print_graph(graph, cycles):

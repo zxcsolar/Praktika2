@@ -1,4 +1,5 @@
 import json
+from http.client import IncompleteRead
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote
 from urllib.request import urlopen
@@ -10,8 +11,10 @@ def fetch_metadata(repository, package):
     name = quote(package, safe="")
     url = f"{repository.rstrip('/')}/{name}/json"
     try:
-        with urlopen(url, timeout=request_timeout) as response:
-            return json.load(response)
+        return read_metadata(url)
+    except IncompleteRead as error:
+        message = f"PyPI прервал передачу данных пакета {package}"
+        raise ValueError(message) from error
     except HTTPError as error:
         if error.code == http_not_found:
             raise ValueError(f"Пакет {package} не найден") from error
@@ -20,6 +23,18 @@ def fetch_metadata(repository, package):
         raise ValueError(f"Репозиторий недоступен: {error.reason}") from error
     except json.JSONDecodeError as error:
         raise ValueError("Репозиторий вернул некорректный JSON") from error
+
+
+def read_metadata(url):
+    try:
+        return read_json(url)
+    except IncompleteRead:
+        return read_json(url)
+
+
+def read_json(url):
+    with urlopen(url, timeout=request_timeout) as response:
+        return json.load(response)
 
 
 def package_info(metadata):
