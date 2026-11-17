@@ -54,7 +54,18 @@
 D -> B -> C -> A
 ```
 
-Для пакета из PyPI этот порядок сравнивается с выводом `pip`.
+Комманды для проверки: .\run.bat graph_diamond.ini или .\run.bat
+graph_leaf.ini. В примерах graph_cycle.ini и graph_self_cycle.ini
+программа сообщает, что порядок загрузки недоступен из-за цикла.
+
+Сравнение для requests:
+
+- Программа: charset-normalizer, idna, urllib3, certifi, requests.
+- pip (Installing collected packages): urllib3, idna, charset_normalizer,
+  certifi, requests.
+
+Четыре зависимости независимы друг от друга, поэтому их можно установить
+в разном порядке. В обоих случаях requests идёт последним.
 
 ## Этап 5: визуализация
 

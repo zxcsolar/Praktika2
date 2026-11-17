@@ -1,6 +1,7 @@
 import configparser
 import sys
 from functools import partial
+from graphlib import TopologicalSorter
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -98,6 +99,7 @@ def show_graph(settings):
         fetch = partial(fetch_metadata, repository)
     graph, cycles = build_graph(settings["package"], fetch)
     print_graph(graph, cycles)
+    print_load_order(graph, cycles, settings["test_mode"])
 
 
 def print_graph(graph, cycles):
@@ -107,6 +109,22 @@ def print_graph(graph, cycles):
         print(f"{name} ({package.version}) -> {neighbors}")
     for source, target in cycles:
         print(f"Циклическая зависимость: {source} -> {target}")
+
+def get_load_order(graph):
+    sorter = TopologicalSorter()
+    for name, package in graph.items():
+        sorter.add(name, *(edge.name for edge in package.dependencies))
+    return tuple(sorter.static_order())
+
+
+def print_load_order(graph, cycles, test_mode):
+    if cycles:
+        print("Порядок загрузки недоступен: в графе есть цикл.")
+        return
+    order = get_load_order(graph)
+    if test_mode:
+        order = tuple(name.upper() for name in order)
+    print("Порядок загрузки: " + " -> ".join(order))
 
 
 def main():
